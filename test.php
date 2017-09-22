@@ -69,6 +69,7 @@ class test
 
 }
 
+// Formating outputs function
 function pre($mixed, $title=null, $print=true){
 	$output = "";
 	if(empty($mixed)){$output .= "<div><h3>-->Empty $title<--</h3></div>";
