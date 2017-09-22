@@ -1,6 +1,6 @@
 **How to use**
 
-1) Include Overloadable.php in your project.
+1) Include 'Overloadable.class.php' in your project.
 1) Create Class i.e: Test.
 2) Put this method into it:
 ```
