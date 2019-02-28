@@ -1,3 +1,10 @@
+# Real Overload (Version 3.8) "without extending" + "support closures"
+## About
+Call methods with different arguments to get different results, i.e:
+- $class->method($string_arg);
+- $class->method($int_arg);
+- $class->method($int_arg, $array_arg);
+
 **How to use**
 
 1) Include 'Overloadable.class.php' in your project.
