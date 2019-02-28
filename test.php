@@ -1,153 +1,134 @@
 <?php
 
-require 'overloadable.php';
+require 'overloadable.class.php';
 
+//----------------------------------------------------------
+#> 2. create new class
+//----------------------------------------------------------
 
 class test 
 {
-	private $name = 'test-1';
-	
-	// Call Overloadable class 
-	// you must copy this method in your class to activate overloading
-	function __call($method, $args) {
-		return Overloadable::call($this, $method, $args);
-	}
-	
-	// func(closure)
-	// New in version 3.8
-	function func__c(Closure $callback) {
-		$r = pre("func__c(".print_r($callback, 1).");", 'print_r(Closure)', false)."\n";
-		$r .= $callback($this->name);
-		return $r;
-	}
-	
-	// func(NULL)
-	function func__n($null){
-		return '[[ NULL ]]';
-	}
-	
-    // myFunction(void)
-    function myFunction__() {
-        return 'myFunction(void)';
+    private $name = 'test-1';
+
+    #> 3. Add __call 'magic method' to your class
+
+    // Call Overloadable class 
+    // you must copy this method in your class to activate overloading
+    function __call($method, $args) {
+        return Overloadable::call($this, $method, $args);
     }
-	
-    // myFunction(integer)
-    function myFunction__i($int) {
-        return 'myFunction(integer='.$int.')';
+
+    #> 4. Add your methods with __ and arg type as one letter ie:(__i, __s, __is) and so on.
+    #> methodname__i = methodname($integer)
+    #> methodname__s = methodname($string)
+    #> methodname__is = methodname($integer, $string)
+
+    // func(closure)
+    function func__c(Closure $callback) {
+        // your code...
+        pre("func__c(".print_r($callback, 1).");", 'print_r(Closure)');
+        return $callback($this->name);
+    }   
+    // func(void)
+    function func__() {
+        pre('func(void)', __function__);
     }
-    // myFunction(string)
-    function myFunction__s($string) {
-        return 'myFunction(string='.$string.')';
+    // func(integer)
+    function func__i($int) {
+        pre('func(integer='.$int.')', __function__);
+    }
+    // func(string)
+    function func__s($string) {
+        pre('func(string='.$string.')', __function__);
     }    
-    // myFunction(string)
-    function myFunction__so($string, $object) {
-        $r = 'myFunction(string='.$string.', object='.get_class($object).')';
-		$object->x++;
-        $r .= '<pre>Object: ';
-        $r .= print_r($object, true);
-        $r .= '</pre>';
-		return $r;
+    // func(string)
+    function func__so($string, $object) {
+        pre('func(string='.$string.', object='.get_class($object).')', __function__);
+        pre($object, 'Object: ');
     }
     // anotherFunction(array)
     function anotherFunction__a($array) {
-        $r = 'anotherFunction('.print_r($array, 1).')'."\n";
+        pre('anotherFunction('.print_r($array, 1).')', __function__);
         $array[0]++;        // change the reference value
         $array['val']++;    // change the reference value
-		$r .= 'array[0]='.$array[0]."\n";
-		$r .= 'array[val]='.$array['val']."\n";
-		return $r;
     }
-    // anotherFunction(string, integer)
-    function anotherFunction__si($key, $value) {
-        $r = 'anotherFunction(string='.$key.', integer='.$value.')';
+    // anotherFunction(string)
+    function anotherFunction__s($key) {
+        pre('anotherFunction(string='.$key.')', __function__);
         // Get a reference
-        $a2 =& Overloadable::refAccess($key); // => $a2 =& $GLOBALS['val'];
+        $a2 =& Overloadable::refAccess($key); // $a2 =& $GLOBALS['val'];
         $a2 *= 3;   // change the reference value
-		$r .= "\nkey=$key, value=$value ($$key * 3) => $$key=$a2;";
-		return $r;
     }
-
 }
 
-// Formating outputs function
-function pre($mixed, $title=null, $print=true){
-	$output = "";
-	if(empty($mixed)){$output .= "<div><h3>-->Empty $title<--</h3></div>";
-		if($print){echo $output; return;}else{return $output;}
-	}
-	$output .= "<fieldset>";
-	if($title){$output .= "<legend><h2>$title</h2></legend>";}
-	$output .= '<pre>'. print_r($mixed, true) .'</pre>';
-	$output .= "</fieldset>";
-	if($print){echo $output;}else{return $output;}
-}
-
-//----------------------------------------------------------
-// Start
 //----------------------------------------------------------
 // Some data to work with:
 $val  = 10;
 class obj {
-    public $x=10;
+    private $x=10;
 }
+
 //----------------------------------------------------------
+#> 5. create your object
+
 // Start
 $t = new test;
 
+pre(
+    $t->func(function($n){
+        return strtoupper($n);
+    })
+, 
+'Closure');
+
+#> 6. Call your method by typing first part before __ and add method $args if exist
+
 // Call first method with no args:
-pre( $t->myFunction() , 'myFunction()'); 
-// Output: myFunction(void)
+$t->func(); 
+// Output: func(void)
 
-pre( $t->myFunction($val), 'myFunction__i');
-// Output: myFunction(integer=10)
+$t->func($val);
+// Output: func(integer=10)
 
-pre( $t->myFunction("hello"), 'myFunction__s');
-// Output: myFunction(string=hello)
+$t->func("hello");
+// Output: func(string=hello)
 
-pre( $t->myFunction("str", new obj()),  'myFunction__so');
+$t->func("str", new obj());
 /* Output: 
-myFunction(string=str, object=obj)
+func(string=str, object=obj)
 Object: obj Object
 (
-    [x] => 11
+    [x:obj:private] => 10
 )
 */
 
 ## Passing by Reference:
 
-
-pre( '$val='.$val,  '$val' );
+echo '$val='.$val;
 // Output: $val=10
 
-pre( $t->anotherFunction(array(&$val, 'val'=>&$val)), 'anotherFunction__a' );
-// Output: 	anotherFunction(Array ( [0] => 10 [val] => 10 ) )
-//			array[0]=12
-//			array[val]=12
+$t->anotherFunction(array(&$val, 'val'=>&$val));
+// Output: anotherFunction(Array ( [0] => 10 [val] => 10 ) )
 
-pre( '$val='.$val, '$val' );
+echo '$val='.$val;
 // Output: $val=12
 
-pre( $t->anotherFunction('val', $val), 'anotherFunction__si' );
-// Output: 	anotherFunction(string=val, integer=12)
-// 			key=val, value=12 ($val * 3) => $val=36;
+$t->anotherFunction('val');
+// Output: anotherFunction(string=val)
 
-pre('$val='.$val, '$val');
+echo '$val='.$val;
 // Output: $val=36
 
-// Closure example
-$f = $t->func( function($n){ return strtoupper($n); } );
-/*Output: print_r(Closure)
-func__c(Closure Object
-(
-    [parameter] => Array
-        (
-            [$n] => 
-        )
 
-)
-);*/
 
-pre( $f, 'Closure' );
-//Output: TEST-1
-pre( $t->func(NULL) , 'Null');
- 
+
+// Helper function
+//----------------------------------------------------------
+function pre($mixed, $title=null){
+    $output = "<fieldset>";
+    $output .= $title ? "<legend><h2>$title</h2></legend>" : "";
+    $output .= '<pre>'. print_r($mixed, 1). '</pre>';
+    $output .= "</fieldset>";
+    echo $output;
+}
+//----------------------------------------------------------
