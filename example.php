@@ -60,7 +60,10 @@ class test
         $a2 *= 3;   // change the reference value
     }
 }
+// Class test ends here
+//----------------------------------------------------------
 
+// Usage
 //----------------------------------------------------------
 // Some data to work with:
 $val  = 10;
